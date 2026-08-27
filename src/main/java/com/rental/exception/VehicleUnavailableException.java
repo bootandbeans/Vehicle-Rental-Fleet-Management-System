@@ -23,7 +23,7 @@ public class VehicleUnavailableException extends Exception {
      */
     public VehicleUnavailableException(String vehicleId, LocalDate requestedStart,
                                        LocalDate requestedEnd, String conflictingReservationId) {
-        super(String.format("Vehicle '%s' is not available from %s to %s — it is already "
+        super(String.format("Vehicle '%s' is not available from %s to %s - it is already "
                 + "reserved (reservation %s)", vehicleId, requestedStart, requestedEnd,
                 conflictingReservationId));
     }

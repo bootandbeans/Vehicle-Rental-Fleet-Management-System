@@ -34,7 +34,7 @@ public final class Truck extends Vehicle {
                 || cargoCapacityCubicMeters > MAX_CARGO_CAPACITY_CUBIC_METERS) {
             throw new IllegalArgumentException(
                     "cargo capacity must be between 0 and "
-                            + MAX_CARGO_CAPACITY_CUBIC_METERS + " m³, got: "
+                            + MAX_CARGO_CAPACITY_CUBIC_METERS + " m3, got: "
                             + cargoCapacityCubicMeters);
         }
         this.cargoCapacityCubicMeters = cargoCapacityCubicMeters;
@@ -49,7 +49,7 @@ public final class Truck extends Vehicle {
 
     @Override
     public String getDetails() {
-        return String.format("Truck %s %s (%d) [%s] | cargo: %.1f m³ | $%.2f/day",
+        return String.format("Truck %s %s (%d) [%s] | cargo: %.1f m3 | $%.2f/day",
                 getMake(), getModel(), getYear(), getId(),
                 getCargoCapacityCubicMeters(), getDailyRate());
     }
