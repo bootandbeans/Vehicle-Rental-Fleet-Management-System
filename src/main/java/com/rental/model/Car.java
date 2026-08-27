@@ -1,12 +1,13 @@
 package com.rental.model;
 
+import com.rental.pricing.CarPricingStrategy;
+
 /**
  * A passenger car.
  *
- * <p>Adds seat count and air-conditioning to the base vehicle. Rate rules
- * (initially implemented directly here): the daily rate applies per day,
- * air-conditioned cars cost a little more per day, and rentals of a week or
- * longer receive a discount.
+ * <p>Adds seat count and air-conditioning to the base vehicle and prices
+ * rentals with {@link CarPricingStrategy} (air-conditioning surcharge per
+ * day, weekly discount for rentals of a week or longer).
  */
 public final class Car extends Vehicle {
 
@@ -14,13 +15,6 @@ public final class Car extends Vehicle {
     public static final int MIN_SEATS = 2;
     /** Most seats a rental car may have. */
     public static final int MAX_SEATS = 12;
-
-    /** Extra charge per day for air-conditioned cars, in dollars. */
-    public static final double AIR_CONDITIONING_SURCHARGE_PER_DAY = 4.0;
-    /** Rentals this long (or longer) qualify for the weekly discount. */
-    public static final int WEEKLY_DISCOUNT_THRESHOLD_DAYS = 7;
-    /** Fraction of the total removed for qualifying rentals. */
-    public static final double WEEKLY_DISCOUNT_RATE = 0.10;
 
     private final int seats;
     private final boolean hasAirConditioning;
@@ -39,7 +33,7 @@ public final class Car extends Vehicle {
      */
     public Car(String id, String make, String model, int year, double dailyRate,
                int seats, boolean hasAirConditioning) {
-        super(id, make, model, year, dailyRate);
+        super(id, make, model, year, dailyRate, new CarPricingStrategy());
         if (seats < MIN_SEATS || seats > MAX_SEATS) {
             throw new IllegalArgumentException(
                     "seat count must be between " + MIN_SEATS + " and " + MAX_SEATS
@@ -61,20 +55,6 @@ public final class Car extends Vehicle {
      */
     public boolean hasAirConditioning() {
         return hasAirConditioning;
-    }
-
-    @Override
-    public double calculateRentalCost(int rentalDays) {
-        requirePositiveRentalDays(rentalDays);
-        double dailyRate = getDailyRate();
-        if (hasAirConditioning()) {
-            dailyRate += AIR_CONDITIONING_SURCHARGE_PER_DAY;
-        }
-        double total = dailyRate * rentalDays;
-        if (rentalDays >= WEEKLY_DISCOUNT_THRESHOLD_DAYS) {
-            total *= (1.0 - WEEKLY_DISCOUNT_RATE);
-        }
-        return roundToCents(total);
     }
 
     @Override
