@@ -1,0 +1,37 @@
+:root {
+  color-scheme: light dark;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: 'Roboto', 'Helvetica', 'Arial', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+code {
+  font-family: 'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.85em;
+  padding: 0 0.25rem;
+  border-radius: 4px;
+  background-color: rgba(127, 127, 127, 0.15);
+}
+
+@media print {
+  /* Printing the results page should show only the solution content. */
+  nav,
+  header,
+  .no-print {
+    display: none !important;
+  }
+
+  main {
+    width: 100% !important;
+    margin: 0 !important;
+  }
+}

@@ -1,0 +1,32 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:vpoptimizer;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ""
+  jpa:
+    hibernate:
+      # The schema is created by Flyway. H2 reports a few column types differently than
+      # PostgreSQL, so entity/schema validation is only enforced against a real PostgreSQL
+      # (see application.yml: ddl-auto=validate).
+      ddl-auto: none
+    open-in-view: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+vp-optimizer:
+  optimization:
+    default-result-limit: 3
+    maximum-result-limit: 10
+    max-selected-products: 25
+    default-max-quantity-per-product: 10
+    max-vp-capacity: 20000
+
+logging:
+  level:
+    com.example.vpoptimizer: INFO
+    org.hibernate.SQL: WARN

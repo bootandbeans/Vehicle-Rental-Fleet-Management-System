@@ -1,0 +1,66 @@
+# Product & Volume Point Optimization System - full stack.
+#
+#   docker compose up --build
+#   UI             http://localhost:3000
+#   REST API       http://localhost:8080/api/products
+#   Swagger UI     http://localhost:8080/swagger-ui.html
+#   Health         http://localhost:8080/api/health
+#
+# The frontend talks to the backend through nginx (`/api` -> backend:8080), so the browser only
+# ever performs same-origin requests.
+name: vp-optimizer
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: vp-optimizer-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-vpoptimizer}
+      POSTGRES_USER: ${POSTGRES_USER:-vpoptimizer}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-vpoptimizer}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-vpoptimizer} -d ${POSTGRES_DB:-vpoptimizer}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+    container_name: vp-optimizer-backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SERVER_PORT: 8080
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${POSTGRES_DB:-vpoptimizer}
+      DB_USER: ${POSTGRES_USER:-vpoptimizer}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-vpoptimizer}
+      # Extra browser origins allowed to call the API directly (comma separated, optional).
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:5173,http://localhost:4173}
+    ports:
+      - "${BACKEND_PORT:-8080}:8080"
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: vp-optimizer-frontend
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "${FRONTEND_PORT:-3000}:80"
+    restart: unless-stopped
+
+volumes:
+  postgres-data:
