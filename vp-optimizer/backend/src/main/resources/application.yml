@@ -1,0 +1,84 @@
+spring:
+  application:
+    name: vp-optimizer
+
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:vpoptimizer}
+    username: ${DB_USER:vpoptimizer}
+    password: ${DB_PASSWORD:vpoptimizer}
+    hikari:
+      maximum-pool-size: ${DB_POOL_SIZE:10}
+      pool-name: vp-optimizer-pool
+
+  jpa:
+    hibernate:
+      # Flyway owns the schema; Hibernate only validates that entities match it.
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 50
+          time_zone: UTC
+        order_inserts: true
+        order_updates: true
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+
+  jackson:
+    serialization:
+      # Emit 21000 instead of 2.1E+4 for BigDecimal values.
+      write-bigdecimal-as-plain: true
+    deserialization:
+      fail-on-unknown-properties: false
+
+server:
+  # Managed platforms (Render, Railway, Cloud Run, ...) inject PORT; SERVER_PORT stays supported for
+  # local runs and docker compose.
+  port: ${PORT:${SERVER_PORT:8080}}
+  error:
+    include-stacktrace: never
+    include-message: never
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+  api-docs:
+    path: /v3/api-docs
+
+# ---------------------------------------------------------------------------
+# Application configuration
+# ---------------------------------------------------------------------------
+vp-optimizer:
+  cors:
+    # Origins allowed to call the API from a browser. Add your deployment origins here.
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:4173,http://localhost:3000}
+    # Patterns are handy for proxied preview hosts (e.g. *.e2b.app).
+    allowed-origin-patterns: ${CORS_ALLOWED_ORIGIN_PATTERNS:http://localhost:*,http://127.0.0.1:*,https://*.e2b.app}
+  optimization:
+    # Number of solutions returned when the request does not ask for a specific amount.
+    default-result-limit: 3
+    # Hard ceiling for the caller supplied resultLimit.
+    maximum-result-limit: 10
+    # Safety limit: how many products may participate in a single optimization.
+    max-selected-products: 25
+    # Products without an explicit maxQuantity are treated as unbounded but are capped here so
+    # that the dynamic program always terminates with bounded work.
+    default-max-quantity-per-product: 10
+    # Absolute ceiling for the dynamic-programming VP axis. Prevents huge allocations when a
+    # caller asks for an unrealistic target VP.
+    max-vp-capacity: 20000

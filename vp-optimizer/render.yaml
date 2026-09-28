@@ -1,0 +1,50 @@
+# ---------------------------------------------------------------------------
+# Render Blueprint: managed PostgreSQL + the Spring Boot API (Docker).
+#
+# Usage:
+#   1. push this repository to GitHub
+#   2. Render Dashboard -> New + -> Blueprint -> select the repository
+#      (Render finds this file automatically)
+#   3. when the API is live, deploy the frontend on Vercel/Netlify and point it
+#      at https://<service>.onrender.com/api  (see vp-optimizer/DEPLOYMENT.md)
+#
+# Both resources use the free plan and the singapore region; change the region
+# if your users are elsewhere (oregon, ohio, virginia, frankfurt, singapore).
+# ---------------------------------------------------------------------------
+databases:
+  # Free: 0.1 CPU / 256 MB / 1 GB disk. Render free databases expire 30 days
+  # after creation and are deleted once the 14 day grace period ends - switch to
+  # Neon (also free, no expiry) when that matters, see vp-optimizer/DEPLOYMENT.md.
+  - name: vp-optimizer-db
+    databaseName: vpoptimizer
+    user: vpoptimizer
+    plan: free
+    region: singapore
+    postgresMajorVersion: "16"
+
+services:
+  - type: web
+    name: vp-optimizer-api
+    runtime: docker
+    plan: free
+    region: singapore
+    # The repository is a monorepo, so both paths are relative to the repo root.
+    dockerfilePath: ./vp-optimizer/backend/Dockerfile
+    dockerContext: ./vp-optimizer/backend
+    healthCheckPath: /api/health
+    autoDeployTrigger: commit
+    envVars:
+      # Spring needs a JDBC URL; backend/entrypoint.sh translates this single
+      # connection string into spring.datasource.* at container start.
+      - key: DATABASE_URL
+        fromDatabase:
+          name: vp-optimizer-db
+          property: connectionString
+      # Browser origins allowed to call the API. For a public demo the wildcard
+      # platform domains are convenient; replace them with your exact frontend
+      # origins for anything real.
+      - key: CORS_ALLOWED_ORIGIN_PATTERNS
+        value: https://*.vercel.app,https://*.netlify.app,https://*.onrender.com
+      # Free instances have 512 MB of RAM.
+      - key: JAVA_OPTS
+        value: -XX:MaxRAMPercentage=70 -XX:+UseContainerSupport

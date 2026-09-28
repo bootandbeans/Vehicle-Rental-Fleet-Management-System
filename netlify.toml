@@ -1,0 +1,38 @@
+# ---------------------------------------------------------------------------
+# Netlify configuration for the VP Optimizer frontend that lives in
+# vp-optimizer/frontend. It sits at the repository root on purpose, so Netlify
+# can build the site straight after importing the Git repository - no dashboard
+# settings, no base directory to configure.
+#
+# Full walkthrough: vp-optimizer/DEPLOYMENT.md
+# ---------------------------------------------------------------------------
+
+[build]
+  base = "vp-optimizer/frontend"
+  command = "npm ci && npm run build"
+  # Relative to `base`.
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# ---------------------------------------------------------------------------
+# Redirects are evaluated top to bottom, first match wins.
+# ---------------------------------------------------------------------------
+
+# Optional: same-origin proxy to the Spring Boot API. Uncomment and replace the
+# host, then set the backend's CORS_ALLOWED_ORIGIN_PATTERNS if you also want
+# direct cross-origin calls. While this stays commented out, the UI simply runs
+# its offline demo engine (the health probe rejects the SPA fallback document).
+#
+# [[redirects]]
+#   from = "/api/*"
+#   to = "https://vp-optimizer-api.onrender.com/api/:splat"
+#   status = 200
+#   force = true
+
+# Single page app: client side routes such as /results/1001 are served by index.html.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

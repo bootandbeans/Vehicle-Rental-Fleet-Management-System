@@ -1,0 +1,41 @@
+# ---------------------------------------------------------------------------
+# Fly.io configuration for the Spring Boot API.
+#
+# Usage (from vp-optimizer/backend):
+#   fly launch --no-deploy --copy-config      # change `app` to a globally unique name
+#   fly postgres create --name vp-optimizer-db --region sin
+#   fly postgres attach vp-optimizer-db       # sets DATABASE_URL, which entrypoint.sh translates
+#   fly secrets set CORS_ALLOWED_ORIGIN_PATTERNS="https://*.vercel.app,https://*.netlify.app"
+#   fly deploy
+#
+# Details: vp-optimizer/DEPLOYMENT.md
+# ---------------------------------------------------------------------------
+app = "vp-optimizer-api"
+primary_region = "sin"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  # server.port reads PORT, so the app binds the same port Fly routes to.
+  PORT = "8080"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ["app"]
+
+  [[http_service.checks]]
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "60s"
+    method = "GET"
+    path = "/api/health"
+
+# 512 MB is comfortable for Spring Boot + Hikari + Flyway.
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"

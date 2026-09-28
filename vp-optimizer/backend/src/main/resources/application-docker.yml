@@ -1,0 +1,9 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:postgres}:${DB_PORT:5432}/${DB_NAME:vpoptimizer}
+    username: ${DB_USER:vpoptimizer}
+    password: ${DB_PASSWORD:vpoptimizer}
+
+logging:
+  level:
+    com.example.vpoptimizer: INFO
